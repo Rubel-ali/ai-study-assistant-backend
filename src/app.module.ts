@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { AiModule } from './ai/ai.module';
 import { PdfModule } from './pdf/pdf.module';
 import { QuizModule } from './quiz/quiz.module';
+import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { QuizModule } from './quiz/quiz.module';
     AiModule,
     PdfModule,
     QuizModule,
+    PdfGeneratorModule,
   ],
   controllers: [AppController],
   providers: [AppService],
