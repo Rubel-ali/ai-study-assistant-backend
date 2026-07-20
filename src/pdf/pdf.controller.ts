@@ -1,8 +1,10 @@
 import { Controller, Post, UseGuards, UseInterceptors, UploadedFile, Req, BadRequestException, Body } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { PdfService } from './pdf.service';
 
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('pdf')
 @UseGuards(AuthGuard('jwt'))
 export class PdfController {

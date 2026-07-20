@@ -9,9 +9,11 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { AiService } from './ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('ai')
 export class AiController {
   constructor(

@@ -1,8 +1,10 @@
 import { Controller, Get, Param, Res, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { PdfGeneratorService } from './pdf-generator.service';
 
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('pdf-generator')
 export class PdfGeneratorController {
   constructor(private readonly pdfGeneratorService: PdfGeneratorService) {}
