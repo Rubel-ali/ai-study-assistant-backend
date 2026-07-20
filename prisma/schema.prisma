@@ -11,13 +11,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
-  role      Role     @default(STUDENT)
-  createdAt DateTime @default(now())
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String
+  firstName      String
+  lastName       String
+  role           Role            @default(STUDENT)
+  createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   documents      Document[]
   aiInteractions AiInteraction[]
@@ -36,7 +36,7 @@ model Document {
   extractedText String
   createdAt     DateTime @default(now())
   
-  user          User     @relation(fields: [userId], references: [id])
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AiInteraction {
@@ -47,6 +47,72 @@ model AiInteraction {
   fileUrl    String?
   aiResponse String
   createdAt  DateTime @default(now())
+  topicId    String?
 
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic      Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+}
+
+model Category {
+  id            String         @id @default(uuid())
+  name          String
+  slug          String         @unique
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subCategories SubCategory[]
+}
+
+model SubCategory {
+  id         String    @id @default(uuid())
+  name       String
+  slug       String    @unique
+  isActive   Boolean   @default(true)
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subjects   Subject[]
+}
+
+model Subject {
+  id            String      @id @default(uuid())
+  name          String
+  code          String      @unique
+  isActive      Boolean     @default(true)
+  subCategoryId String
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  topics        Topic[]
+}
+
+model Topic {
+  id             String          @id @default(uuid())
+  title          String
+  description    String?
+  isActive       Boolean         @default(true)
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions      Question[]
+  exams          Exam[]
+  aiInteractions AiInteraction[]
+}
+
+model Question {
+  id            String  @id @default(uuid())
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctOption String
+  explanation   String?
+  topicId       String
+  topic         Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+}
+
+model Exam {
+  id         String @id @default(uuid())
+  title      String
+  duration   Int    // duration in mins
+  totalMarks Int
+  topicId    String
+  topic      Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
 }
