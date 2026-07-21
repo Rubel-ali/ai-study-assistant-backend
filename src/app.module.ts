@@ -11,6 +11,7 @@ import { AiModule } from './ai/ai.module';
 import { PdfModule } from './pdf/pdf.module';
 import { QuizModule } from './quiz/quiz.module';
 import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
+import { CategoriesModule } from './categories/categories.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { validate } from './config/env.validation';
 
@@ -31,6 +32,7 @@ import { validate } from './config/env.validation';
     PdfModule,
     QuizModule,
     PdfGeneratorModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [

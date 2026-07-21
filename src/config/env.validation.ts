@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsString, validateSync } from 'class-validator';
+import { IsString, IsOptional, validateSync } from 'class-validator';
 
 class EnvironmentVariables {
   @IsString()
@@ -9,7 +9,12 @@ class EnvironmentVariables {
   JWT_SECRET: string;
 
   @IsString()
-  GEMINI_API_KEY: string;
+  @IsOptional()
+  GEMINI_API_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  GEMINI_API_KEYS?: string;
 }
 
 export function validate(config: Record<string, unknown>) {
