@@ -6,12 +6,15 @@ import {
   UploadedFile,
   Body,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import { AiService } from './ai.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { GenerateSubjectsDto } from './dto/generate-subjects.dto';
+import { GenerateTopicsDto } from './dto/generate-topics.dto';
 
 @Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('ai')
@@ -46,5 +49,23 @@ export class AiController {
       success: true,
       data: interaction,
     };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('generate-subjects')
+  async generateSubjects(@Req() req: any, @Body() dto: GenerateSubjectsDto) {
+    if (req.user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only Admins can auto-generate subjects');
+    }
+    return this.aiService.generateSubjects(dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('generate-topics')
+  async generateTopics(@Req() req: any, @Body() dto: GenerateTopicsDto) {
+    if (req.user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only Admins can auto-generate topics');
+    }
+    return this.aiService.generateTopics(dto);
   }
 }

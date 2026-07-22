@@ -12,6 +12,8 @@ import { PdfModule } from './pdf/pdf.module';
 import { QuizModule } from './quiz/quiz.module';
 import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
 import { CategoriesModule } from './categories/categories.module';
+import { SubjectsModule } from './subjects/subjects.module';
+import { TopicsModule } from './topics/topics.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { validate } from './config/env.validation';
 
@@ -33,6 +35,8 @@ import { validate } from './config/env.validation';
     QuizModule,
     PdfGeneratorModule,
     CategoriesModule,
+    SubjectsModule,
+    TopicsModule,
   ],
   controllers: [AppController],
   providers: [

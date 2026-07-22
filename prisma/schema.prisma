@@ -35,8 +35,8 @@ model Document {
   fileUrl       String
   extractedText String
   createdAt     DateTime @default(now())
-  
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AiInteraction {
@@ -49,17 +49,17 @@ model AiInteraction {
   createdAt  DateTime @default(now())
   topicId    String?
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic      Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic? @relation(fields: [topicId], references: [id], onDelete: SetNull)
 }
 
 model Category {
-  id            String         @id @default(uuid())
+  id            String        @id @default(uuid())
   name          String
-  slug          String         @unique
-  isActive      Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  slug          String        @unique
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   subCategories SubCategory[]
 }
 
@@ -80,16 +80,20 @@ model Subject {
   isActive      Boolean     @default(true)
   subCategoryId String
   subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   topics        Topic[]
 }
 
 model Topic {
   id             String          @id @default(uuid())
-  title          String
+  name           String
   description    String?
   isActive       Boolean         @default(true)
   subjectId      String
   subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   questions      Question[]
   exams          Exam[]
   aiInteractions AiInteraction[]
@@ -111,7 +115,7 @@ model Question {
 model Exam {
   id         String @id @default(uuid())
   title      String
-  duration   Int    // duration in mins
+  duration   Int // duration in mins
   totalMarks Int
   topicId    String
   topic      Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)

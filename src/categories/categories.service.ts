@@ -107,4 +107,11 @@ export class CategoriesService {
 
     return { success: true, data: categories };
   }
+
+  async getSubCategoriesByCategory(categoryId: string) {
+    const subCategories = await this.prisma.subCategory.findMany({
+      where: { categoryId, isActive: true },
+    });
+    return { success: true, data: subCategories };
+  }
 }
