@@ -15,6 +15,7 @@ import { AiService } from './ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { GenerateSubjectsDto } from './dto/generate-subjects.dto';
 import { GenerateTopicsDto } from './dto/generate-topics.dto';
+import { GenerateQuestionsDto } from './dto/generate-questions.dto';
 
 @Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('ai')
@@ -67,5 +68,14 @@ export class AiController {
       throw new ForbiddenException('Only Admins can auto-generate topics');
     }
     return this.aiService.generateTopics(dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('generate-questions')
+  async generateQuestions(@Req() req: any, @Body() dto: GenerateQuestionsDto) {
+    if (req.user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only Admins can auto-generate questions');
+    }
+    return this.aiService.generateQuestions(dto);
   }
 }

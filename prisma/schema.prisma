@@ -21,6 +21,7 @@ model User {
   updatedAt      DateTime        @updatedAt
   documents      Document[]
   aiInteractions AiInteraction[]
+  exams          Exam[]
 }
 
 enum Role {
@@ -109,14 +110,37 @@ model Question {
   correctOption String
   explanation   String?
   topicId       String
-  topic         Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topic         Topic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  examAnswers   ExamAnswer[]
 }
 
 model Exam {
-  id         String @id @default(uuid())
-  title      String
-  duration   Int // duration in mins
-  totalMarks Int
+  id         String       @id @default(uuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   topicId    String
-  topic      Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topic      Topic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  status     ExamStatus   @default(IN_PROGRESS)
+  score      Int          @default(0)
+  totalMarks Int          @default(0)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  answers    ExamAnswer[]
 }
+
+enum ExamStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model ExamAnswer {
+  id             String   @id @default(uuid())
+  examId         String
+  exam           Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption String
+  isCorrect      Boolean
+  createdAt      DateTime @default(now())
+}
+

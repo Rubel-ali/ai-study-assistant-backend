@@ -1,9 +1,11 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, Part } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import { PrismaService } from '../prisma/prisma.service';
 import { GenerateSubjectsDto } from './dto/generate-subjects.dto';
 import { GenerateTopicsDto } from './dto/generate-topics.dto';
+import { GenerateQuestionsDto } from './dto/generate-questions.dto';
 
 @Injectable()
 export class AiService {
@@ -177,6 +179,98 @@ export class AiService {
     });
 
     return { success: true, count: subjectsData.length, subjects: subjectsData };
+  }
+
+  async generateQuestions(dto: GenerateQuestionsDto) {
+    const topic = await this.prisma.topic.findUnique({
+      where: { id: dto.topicId },
+    });
+
+    if (!topic) {
+      throw new BadRequestException(`Topic with ID ${dto.topicId} not found`);
+    }
+
+    const prompt = `
+      You are an expert curriculum designer. 
+      Given the Subject "${dto.subjectName}" and the Topic "${dto.topicName}", 
+      generate ${dto.count} multiple-choice questions (MCQs).
+      
+      Respond STRICTLY in JSON format matching this schema:
+      [
+        {
+          "questionText": "...",
+          "explanation": "...",
+          "options": [
+            { "optionText": "...", "isCorrect": true },
+            { "optionText": "...", "isCorrect": false },
+            { "optionText": "...", "isCorrect": false },
+            { "optionText": "...", "isCorrect": false }
+          ]
+        }
+      ]
+      Ensure each question has exactly 4 options and exactly one correct option (isCorrect: true).
+      Do not wrap the JSON in markdown code blocks.
+    `;
+
+    let rawText = '';
+    const parts: Part[] = [{ text: prompt }];
+    const modelName = this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash-lite';
+    
+    try {
+      rawText = await this.attemptGenerateContent(modelName, parts);
+    } catch (error: any) {
+      console.warn(`[AI Service] Gemini failed (${error.message}). Falling back to Groq...`);
+      const groqKey = this.configService.get<string>('GROQ_API_KEY');
+      if (!groqKey) {
+        throw new InternalServerErrorException('Gemini failed and GROQ_API_KEY is not configured');
+      }
+      try {
+        const groq = new Groq({ apiKey: groqKey });
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [{ role: 'user', content: prompt }],
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.5,
+        });
+        rawText = chatCompletion.choices[0]?.message?.content || '';
+      } catch (groqError: any) {
+        throw new InternalServerErrorException(`AI processing failed on all models. Last error: ${groqError.message}`);
+      }
+    }
+
+    let parsed: any;
+    try {
+      const cleanedText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      parsed = JSON.parse(cleanedText);
+    } catch (error) {
+      console.error('Failed to parse JSON from AI output:', rawText);
+      throw new InternalServerErrorException('AI returned invalid JSON format');
+    }
+
+    if (!Array.isArray(parsed)) {
+      throw new InternalServerErrorException('AI failed to generate a valid list of questions');
+    }
+
+    const questionsData = parsed.map((q: any) => {
+      const correctIndex = q.options.findIndex((o: any) => o.isCorrect === true);
+      const correctOptionLetter = ['A', 'B', 'C', 'D'][correctIndex !== -1 ? correctIndex : 0];
+      
+      return {
+        questionText: q.questionText,
+        explanation: q.explanation || null,
+        optionA: q.options[0]?.optionText || '',
+        optionB: q.options[1]?.optionText || '',
+        optionC: q.options[2]?.optionText || '',
+        optionD: q.options[3]?.optionText || '',
+        correctOption: correctOptionLetter,
+        topicId: dto.topicId,
+      };
+    });
+
+    const createdQuestions = await this.prisma.$transaction(
+      questionsData.map(data => this.prisma.question.create({ data }))
+    );
+
+    return { success: true, count: createdQuestions.length, questions: createdQuestions };
   }
 
   async generateTopics(dto: GenerateTopicsDto) {
