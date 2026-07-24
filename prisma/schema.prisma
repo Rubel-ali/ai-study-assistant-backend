@@ -109,6 +109,7 @@ model Question {
   optionD       String
   correctOption String
   explanation   String?
+  tag           String?
   topicId       String
   topic         Topic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
   examAnswers   ExamAnswer[]

@@ -17,6 +17,7 @@ import { TopicsModule } from './topics/topics.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { validate } from './config/env.validation';
 import { ExamsModule } from './exams/exams.module';
+import { QuestionsModule } from './questions/questions.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ExamsModule } from './exams/exams.module';
     SubjectsModule,
     TopicsModule,
     ExamsModule,
+    QuestionsModule,
   ],
   controllers: [AppController],
   providers: [
