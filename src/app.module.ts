@@ -18,6 +18,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { validate } from './config/env.validation';
 import { ExamsModule } from './exams/exams.module';
 import { QuestionsModule } from './questions/questions.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { QuestionsModule } from './questions/questions.module';
     TopicsModule,
     ExamsModule,
     QuestionsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
